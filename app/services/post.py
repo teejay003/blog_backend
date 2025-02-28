@@ -36,8 +36,9 @@ def update_post(db: Session, post_id: int, post_update: schemas.PostCreate, curr
     return db_post
 
 def list_all_posts(db: Session):
-    """Retrieve all posts."""
-    return db.query(models.Post).all()
+    """Retrieve all posts with likes as user IDs."""
+    posts = db.query(models.Post).all()
+    return [schemas.Post.from_orm_with_likes(post) for post in posts]
 
 def get_post_by_id(db: Session, post_id: int):
     """Retrieve a post by its ID."""
@@ -85,23 +86,30 @@ def like_post(db: Session, post_id: int, current_user):
     
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
+    # Ensure the likes relationship is updated properly
     if current_user in db_post.likes:
         db_post.likes.remove(current_user)  # Unlike
     else:
         db_post.likes.append(current_user)  # Like
-    
+
     db.commit()
-    return {"message": "Post liked/unliked successfully"}
+    db.refresh(db_post)  # ✅ Ensure we return the updated post
+
+    return {"message": "Post liked/unliked successfully", "likes": len(db_post.likes)}
+
 
 def add_comment(db: Session, post_id: int, comment_text: str, current_user):
     """Users can add comments to posts."""
+    if not comment_text:
+        comment_text = ""  # Provide a default value if comment_text is None or empty
+
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
     
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    comment = models.Comment(content=comment_text, post_id=post_id, user_id=current_user.id)
+    comment = models.Comment(comment_text=comment_text, post_id=post_id, user_id=current_user.id)
     db.add(comment)
     db.commit()
     return {"message": "Comment added successfully"}

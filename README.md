@@ -13,8 +13,8 @@ This is a backend API built with **FastAPI** for a blog application. It supports
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/your-repo.git
-cd your-repo
+git clone git@github.com:ifeoluwashola/blog_backend.git
+cd blog_backend
 ```
 
 ### 2️⃣ Create a virtual environment
@@ -29,7 +29,7 @@ venv\Scripts\activate     # On Windows
 pip install -r requirements.txt
 ```
 
-### 4️⃣ Set up the database
+### 4️⃣ Create Database Migration file
 Modify `database.py` to configure your database connection.
 
 Run database migrations:
@@ -39,7 +39,7 @@ alembic upgrade head
 
 ### 5️⃣ Start the server
 ```bash
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## API Endpoints

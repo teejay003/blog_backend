@@ -1,8 +1,8 @@
 """added like and comments feature
 
-Revision ID: cfca73469934
-Revises: cd90610cb235
-Create Date: 2025-02-27 19:45:23.949430
+Revision ID: cf803dce6c74
+Revises: b0bc9d5e5271
+Create Date: 2025-02-28 17:24:01.098689
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cfca73469934'
-down_revision: Union[str, None] = 'cd90610cb235'
+revision: str = 'cf803dce6c74'
+down_revision: Union[str, None] = 'b0bc9d5e5271'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

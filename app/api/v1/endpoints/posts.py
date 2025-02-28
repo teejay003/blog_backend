@@ -6,6 +6,7 @@ from app.services import post as services
 from app.services.user import get_current_user
 from typing import List, Optional
 
+    
 router = APIRouter()
 
 @router.post("/", response_model=schemas.Post, status_code=status.HTTP_201_CREATED)
@@ -16,7 +17,7 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current
 def update_post(post_id: int, post: schemas.PostCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     return services.update_post(db, post_id, post, current_user)
 
-@router.get("/", response_model=List[schemas.Post])
+@router.get("", response_model=List[schemas.Post])  # ✅ Remove trailing slash
 def list_posts(db: Session = Depends(get_db)):
     """Retrieve all blog posts."""
     return services.list_all_posts(db)
@@ -46,5 +47,10 @@ def like_post(post_id: int, db: Session = Depends(get_db), current_user=Depends(
     return services.like_post(db, post_id, current_user)
 
 @router.post("/{post_id}/comment")
-def add_comment(post_id: int, comment_text: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return services.add_comment(db, post_id, comment_text, current_user)
+def add_comment(
+    post_id: int, 
+    request: schemas.Comment, 
+    db: Session = Depends(get_db), 
+    current_user=Depends(get_current_user)
+):
+    return services.add_comment(db, post_id, request.comment_text, current_user)
