@@ -23,7 +23,7 @@ class PostBase(BaseModel):
 
 class PostCreate(PostBase):
     pass
-
+    
 class Post(PostBase):
     id: int
     author_id: int
@@ -51,3 +51,7 @@ class Post(PostBase):
                 for comment in post.comments or []  # ✅ Handle missing comments properly
             ],
         )
+
+class PostResponse(BaseModel):
+    total: int
+    posts: List[Post]

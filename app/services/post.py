@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.models import post as models
 from app.schemas import post as schemas
 from fastapi import HTTPException, status
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 def create_post(db: Session, post: schemas.PostCreate, current_user):
     """Only admin can create posts."""
@@ -35,37 +35,46 @@ def update_post(db: Session, post_id: int, post_update: schemas.PostCreate, curr
     db.refresh(db_post)
     return db_post
 
-def list_all_posts(db: Session):
+def list_all_posts(db: Session, limit: int, offset: int) -> Dict[str, List[schemas.Post]]:
     """Retrieve all posts with likes as user IDs."""
-    posts = db.query(models.Post).all()
-    return [schemas.Post.from_orm_with_likes(post) for post in posts]
+    total_count = db.query(models.Post).count()
+    posts = db.query(models.Post).limit(limit).offset(offset).all()
+    post_list = [schemas.Post.from_orm_with_likes(post) for post in posts]
+    return {"total": total_count, "posts": post_list}
 
 def get_post_by_id(db: Session, post_id: int):
-    """Retrieve a post by its ID."""
+    """Retrieve a post by its ID with correct serialization."""
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
-    return db_post
+    return schemas.Post.from_orm_with_likes(db_post)  # ✅ Ensure correct response format
 
-def get_filtered_posts(
-    db: Session,
-    title: Optional[str] = None,
-    author_id: Optional[int] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-) -> List[models.Post]:
-    """Retrieve posts based on optional filters."""
+def get_filtered_posts(db: Session, title: Optional[str], author_id: Optional[int], start_date: Optional[str], end_date: Optional[str]):
+    """Retrieve filtered posts based on title, author ID, and date range."""
     query = db.query(models.Post)
-
     if title:
         query = query.filter(models.Post.title.ilike(f"%{title}%"))
     if author_id:
         query = query.filter(models.Post.author_id == author_id)
-    if start_date and end_date:
-        query = query.filter(models.Post.created_at.between(start_date, end_date))
-
-    return query.all()
-
+    if start_date:
+        query = query.filter(models.Post.created_at >= start_date)
+    if end_date:
+        query = query.filter(models.Post.created_at <= end_date)
+    posts = query.all()
+    return [
+        {
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "author_id": post.author_id,  # Include author_id
+            "created_at": post.created_at,  # Include created_at
+            "updated_at": post.updated_at,  # Include updated_at
+            "likes": [user.id for user in post.likes],  # Extract user IDs from User objects
+            # Include other fields as necessary
+        }
+        for post in posts
+    ]
+    
 def delete_post(db: Session, post_id: int, current_user):
     """Only admin can delete posts."""
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
