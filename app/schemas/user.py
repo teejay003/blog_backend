@@ -10,7 +10,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
-    is_superuser: bool
+    is_admin: bool
     created_at: datetime
     updated_at: datetime
 

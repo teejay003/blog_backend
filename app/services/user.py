@@ -15,7 +15,7 @@ def create_admin_user(db: Session, user: schemas.UserCreate):
         raise HTTPException(status_code=400, detail="Username already exists")
 
     hashed_password = security.get_password_hash(user.password)
-    admin_user = models.User(username=user.username, hashed_password=hashed_password, is_admin=True)
+    admin_user = models.User(username=user.username, hashed_password=hashed_password, is_admin=True, is_superuser=True)
     
     db.add(admin_user)
     db.commit()
