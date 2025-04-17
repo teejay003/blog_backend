@@ -30,7 +30,7 @@ jobs:
 
 
       - name: Terraform plan
-        uses: terraform plan
+        run: terraform plan
 
       - name: Terraform apply
-        uses: terraform apply -auto-approve
+        run: terraform apply -auto-approve
